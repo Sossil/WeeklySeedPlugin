@@ -1,6 +1,17 @@
 {
-  "Group": "Sossil",
+  "Group": "HTSR",
   "Name": "WeeklySeedPlugin",
   "Version": "1.0.0",
-  "Main": "weeklyseedplugin.WeeklySeedPlugin"
+  "Main": "weeklyseedplugin.WeeklySeedPlugin",
+  "Authors": [
+    {
+      "Name": "Sossil"
+    },
+    {
+      "Name": "Okia"
+    },
+    {
+      "Name": "Valenaris"
+    }
+  ]
 }
