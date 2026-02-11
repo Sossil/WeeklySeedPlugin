@@ -8,7 +8,7 @@ public class SeedConfig {
 
     public static final BuilderCodec<SeedConfig> CODEC;
 
-    private long seed = 0L;
+    private static long seed = 0L;
 
     public SeedConfig () {
     }
@@ -17,8 +17,8 @@ public class SeedConfig {
         return this.seed;
     }
 
-    public void setSeed(long seed) {
-        this.seed = seed;
+    public static void setSeed(long seed) {
+        SeedConfig.seed = seed;
     }
 
     static {

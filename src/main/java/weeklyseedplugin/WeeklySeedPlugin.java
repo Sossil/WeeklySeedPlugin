@@ -34,8 +34,11 @@ import java.util.Set;
 public class WeeklySeedPlugin extends JavaPlugin {
     private Config<SeedConfig> seedConfig;
 
-    public WeeklySeedPlugin(JavaPluginInit init) {
+    public WeeklySeedPlugin(JavaPluginInit init) throws Exception {
         super(init);
+
+        long seed = WeeklySeedFetcher.fetchSeed();
+        SeedConfig.setSeed(seed);
     }
 
     @Override
@@ -85,26 +88,6 @@ public class WeeklySeedPlugin extends JavaPlugin {
             String posKey = x + "," + y + "," + z;
             return POSITION_TO_DROPLIST.get(posKey);
         }
-
-        public class WeeklySeedFetcher {
-            public static long fetchSeed() throws Exception {
-
-                HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://raw.githubusercontent.com/Sossil/WeeklySeedPlugin/master/src/main/resources/weeklyseed.txt"))
-                        .GET()
-                        .build();
-
-                HttpResponse<String> response = HttpClient
-                        .newHttpClient()
-                        .send(request, HttpResponse.BodyHandlers.ofString());
-
-                if (response.statusCode() != 200) {
-                    throw new RuntimeException("Seed fetch failed with code: " + response.statusCode());
-                }
-
-                return Long.parseLong(response.body().trim());
-            }
-        }
         
         @Override
         public void onEntityRemove(@NotNull Ref<ChunkStore> ref, @NotNull RemoveReason removeReason, @NotNull Store<ChunkStore> store, @NotNull CommandBuffer<ChunkStore> commandBuffer) {
@@ -119,6 +102,26 @@ public class WeeklySeedPlugin extends JavaPlugin {
         @Nonnull
         public Set<Dependency<ChunkStore>> getDependencies() {
             return this.dependencies;
+        }
+    }
+
+    public class WeeklySeedFetcher {
+        public static long fetchSeed() throws Exception {
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("https://raw.githubusercontent.com/Sossil/WeeklySeedPlugin/master/src/main/resources/weeklyseed.txt"))
+                    .GET()
+                    .build();
+
+            HttpResponse<String> response = HttpClient
+                    .newHttpClient()
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() != 200) {
+                throw new RuntimeException("Seed fetch failed with code: " + response.statusCode());
+            }
+
+            return Long.parseLong(response.body().trim());
         }
     }
 }
