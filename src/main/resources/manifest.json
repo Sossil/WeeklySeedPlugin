@@ -1,0 +1,6 @@
+{
+  "Group": "Sossil",
+  "Name": "WeeklySeedPlugin",
+  "Version": "1.0.0",
+  "Main": "weeklyseedplugin.WeeklySeedPlugin"
+}
