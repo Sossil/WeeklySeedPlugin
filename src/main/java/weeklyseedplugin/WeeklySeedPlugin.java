@@ -90,7 +90,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
             public static long fetchSeed() throws Exception {
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create("https://raw.githubusercontent.com/name/repo/main/weeklyseed.txt"))
+                        .uri(URI.create("https://raw.githubusercontent.com/Sossil/WeeklySeedPlugin/master/src/main/resources/weeklyseed.txt"))
                         .GET()
                         .build();
 
