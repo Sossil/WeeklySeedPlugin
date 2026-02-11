@@ -23,6 +23,7 @@ import weeklyseedplugin.setseedplugin.SeedConfig;
 import weeklyseedplugin.standardizerplugin.chests.DamageBlockCancel;
 import weeklyseedplugin.standardizerplugin.chests.UseBlockStandardizePre;
 import weeklyseedplugin.standardizerplugin.mobs.OnDeathStandardize;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -85,6 +86,16 @@ public class WeeklySeedPlugin extends JavaPlugin {
 
                 String posKey = x + "," + y + "," + z;
                 POSITION_TO_DROPLIST.put(posKey, droplist);
+
+                if (isFirstChestOpen(x, y, z)) {
+                    try {
+                        Field dropListField = ItemContainerState.class.getDeclaredField("droplist");
+                        dropListField.setAccessible(true);
+                        dropListField.set(itemContainerState, null);
+                    } catch (NoSuchFieldException | IllegalAccessException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             }
 
         }
