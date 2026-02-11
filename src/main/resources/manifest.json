@@ -1,7 +1,7 @@
 {
   "Group": "HTSR",
   "Name": "WeeklySeedPlugin",
-  "Version": "1.0.0",
+  "Version": "1.1.0",
   "Main": "weeklyseedplugin.WeeklySeedPlugin",
   "Authors": [
     {

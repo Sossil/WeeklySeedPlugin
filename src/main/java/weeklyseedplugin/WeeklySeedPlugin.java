@@ -7,6 +7,7 @@ import com.hypixel.hytale.component.dependency.Order;
 import com.hypixel.hytale.component.dependency.SystemDependency;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
+import com.hypixel.hytale.server.core.event.events.ecs.DamageBlockEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
 import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent;
@@ -19,6 +20,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import weeklyseedplugin.setseedplugin.AddWorldSetSeed;
 import weeklyseedplugin.setseedplugin.SeedConfig;
+import weeklyseedplugin.standardizerplugin.chests.DamageBlockCancel;
 import weeklyseedplugin.standardizerplugin.chests.UseBlockStandardizePre;
 import weeklyseedplugin.standardizerplugin.mobs.OnDeathStandardize;
 import java.net.URI;
@@ -58,6 +60,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
 
         getEntityStoreRegistry().registerSystem(new UseBlockStandardizePre());
         getEntityStoreRegistry().registerSystem(new OnDeathStandardize());
+        getEntityStoreRegistry().registerSystem(new DamageBlockCancel(DamageBlockEvent.class));
     }
     public static class LookupSystem extends RefSystem<ChunkStore> {
         private static final Map<String, String> POSITION_TO_DROPLIST = new ConcurrentHashMap<>();
