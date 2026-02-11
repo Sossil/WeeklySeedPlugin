@@ -61,9 +61,11 @@ public class WeeklySeedPlugin extends JavaPlugin {
     }
     public static class LookupSystem extends RefSystem<ChunkStore> {
         private static final Map<String, String> POSITION_TO_DROPLIST = new ConcurrentHashMap<>();
+        private static final Map<String, String> OPENED_CHEST = new ConcurrentHashMap<>();
         private final ComponentType<ChunkStore, ItemContainerState> componentType;
         @Nonnull
         private final Set<Dependency<ChunkStore>> dependencies;
+
 
         public LookupSystem(ComponentType<ChunkStore, ItemContainerState> componentType) {
             this.componentType = componentType;
@@ -88,7 +90,17 @@ public class WeeklySeedPlugin extends JavaPlugin {
             String posKey = x + "," + y + "," + z;
             return POSITION_TO_DROPLIST.get(posKey);
         }
-        
+
+        public static boolean isFirstChestOpen(int x, int y, int z) {
+            String posKey = x + "," + y + "," + z;
+            return !OPENED_CHEST.containsKey(posKey);
+        }
+
+        public static void markChestOpen(int x, int y, int z) {
+            String posKey = x + "," + y + "," + z;
+            OPENED_CHEST.put(posKey, "");
+        }
+
         @Override
         public void onEntityRemove(@NotNull Ref<ChunkStore> ref, @NotNull RemoveReason removeReason, @NotNull Store<ChunkStore> store, @NotNull CommandBuffer<ChunkStore> commandBuffer) {
 

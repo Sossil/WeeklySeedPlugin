@@ -56,23 +56,26 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
 
     private void standardizeChestContents(ItemContainerState container, Vector3i pos) {
         String dropList = WeeklySeedPlugin.LookupSystem.getDropList(pos.getX(), pos.getY(), pos.getZ());
-        container.getItemContainer().clear();
 
-        List<ItemStack> drops = this.getSeededItemDrops(dropList);
+        if (WeeklySeedPlugin.LookupSystem.isFirstChestOpen(pos.getX(), pos.getY(), pos.getZ())) {
+            container.getItemContainer().clear();
+            List<ItemStack> drops = this.getSeededItemDrops(dropList);
 
-        if (!drops.isEmpty()) {
-            short capacity = container.getItemContainer().getCapacity();
-            List<Short> slots = new ArrayList();
+            if (!drops.isEmpty()) {
+                short capacity = container.getItemContainer().getCapacity();
+                List<Short> slots = new ArrayList();
 
-            for (short s = 0; s < capacity; ++s) {
-                slots.add(s);
+                for (short s = 0; s < capacity; ++s) {
+                    slots.add(s);
+                }
+                Collections.shuffle(slots, ThreadLocalRandom.current());
+
+                for (int idx = 0; idx < drops.size() && idx < slots.size(); ++idx) {
+                    short slot = slots.get(idx);
+                    container.getItemContainer().setItemStackForSlot(slot, (ItemStack) drops.get(idx));
+                }
             }
-            Collections.shuffle(slots, ThreadLocalRandom.current());
-
-            for(int idx = 0; idx < drops.size() && idx < slots.size(); ++idx) {
-                short slot = slots.get(idx);
-                container.getItemContainer().setItemStackForSlot(slot, (ItemStack)drops.get(idx));
-            }
+            WeeklySeedPlugin.LookupSystem.markChestOpen(pos.getX(), pos.getY(), pos.getZ());
         }
     }
 
