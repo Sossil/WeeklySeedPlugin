@@ -17,7 +17,7 @@ public class SeedConfig {
 
     public long getOffset() {return offset;}
 
-    public static void setOffset(long offset) {
+    public void setOffset(long offset) {
         SeedConfig.offset = offset;
     }
 
@@ -25,7 +25,7 @@ public class SeedConfig {
         return seed;
     }
 
-    public static void setSeed(long seed) {
+    public void setSeed(long seed) {
         SeedConfig.seed = seed;
     }
 

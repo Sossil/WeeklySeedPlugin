@@ -38,11 +38,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
     public WeeklySeedPlugin(JavaPluginInit init) throws Exception {
         super(init);
 
-        long seed = WeeklySeedFetcher.seed;
-        SeedConfig.setSeed(seed);
-
-        long offset = WeeklySeedFetcher.offset;
-        SeedConfig.setOffset(offset);
+        WeeklySeedFetcher.fetch();
     }
 
     @Override
@@ -54,6 +50,11 @@ public class WeeklySeedPlugin extends JavaPlugin {
         seedConfig = new Config<>(getDataDirectory(), "SeedConfig.json", SeedConfig.CODEC);
         seedConfig.load();
 
+        SeedConfig config = seedConfig.get();
+        config.setSeed(WeeklySeedFetcher.seed);
+        config.setOffset(WeeklySeedFetcher.offset);
+        seedConfig.save();
+
         UseBlockStandardizePre.setSeedConfig(seedConfig);
 
         AddWorldSetSeed.setSeedConfig(seedConfig);
@@ -63,6 +64,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
         getEntityStoreRegistry().registerSystem(new UseBlockStandardizePre());
         getEntityStoreRegistry().registerSystem(new OnDeathStandardize());
     }
+
     public static class LookupSystem extends RefSystem<ChunkStore> {
         private static final Map<String, String> POSITION_TO_DROPLIST = new ConcurrentHashMap<>();
         private static final Map<String, String> OPENED_CHEST = new ConcurrentHashMap<>();
