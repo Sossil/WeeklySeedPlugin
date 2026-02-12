@@ -89,7 +89,8 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
                 List<ItemStack> generatedItemDrops = new ObjectArrayList();
                 long seed = seedConfig.get().getSeed();
                 long positionSeed = ((long)pos.getX() * 31 + pos.getY() * 31 + pos.getZ());
-                long combinedSeed = seed ^ positionSeed;
+                long offset = seedConfig.get().getOffset();
+                long combinedSeed = seed ^ positionSeed ^ offset;
                 Random seededRandom = new Random(combinedSeed);
                 List<ItemDrop> configuredItemDrops = new ObjectArrayList();
                 ItemDropContainer var10000 = itemDropList.getContainer();

@@ -38,8 +38,11 @@ public class WeeklySeedPlugin extends JavaPlugin {
     public WeeklySeedPlugin(JavaPluginInit init) throws Exception {
         super(init);
 
-        long seed = WeeklySeedFetcher.fetchSeed();
+        long seed = WeeklySeedFetcher.seed;
         SeedConfig.setSeed(seed);
+
+        long offset = WeeklySeedFetcher.offset;
+        SeedConfig.setOffset(offset);
     }
 
     @Override
@@ -129,7 +132,10 @@ public class WeeklySeedPlugin extends JavaPlugin {
     }
 
     public class WeeklySeedFetcher {
-        public static long fetchSeed() throws Exception {
+        public static long seed;
+        public static long offset;
+
+        public static void fetch() throws Exception {
 
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("https://raw.githubusercontent.com/Sossil/WeeklySeedPlugin/master/src/main/resources/weeklyseed.txt"))
@@ -144,7 +150,14 @@ public class WeeklySeedPlugin extends JavaPlugin {
                 throw new RuntimeException("Seed fetch failed with code: " + response.statusCode());
             }
 
-            return Long.parseLong(response.body().trim());
+            String[] lines = response.body().trim().split(" ");
+
+            if (lines.length < 2) {
+                throw new RuntimeException("Expected 'seed offset");
+            }
+
+            seed = Long.parseLong(lines[0].trim());
+            offset = Long.parseLong(lines[1].trim());
         }
     }
 }
