@@ -52,7 +52,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
         seedConfig.save();
 
         UseBlockStandardizePre.setSeedConfig(seedConfig);
-
+        OnDeathStandardize.setSeedConfig(seedConfig);
         AddWorldSetSeed.setSeedConfig(seedConfig);
 
         getEventRegistry().registerGlobal(AddWorldEvent.class, AddWorldSetSeed::onWorldAdd);
