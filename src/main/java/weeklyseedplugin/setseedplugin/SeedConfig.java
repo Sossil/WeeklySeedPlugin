@@ -8,9 +8,9 @@ public class SeedConfig {
 
     public static final BuilderCodec<SeedConfig> CODEC;
 
-    private static long seed;
+    private long seed;
 
-    private static long offset;
+    private long offset;
 
     public SeedConfig() {
     }
@@ -18,7 +18,7 @@ public class SeedConfig {
     public long getOffset() {return offset;}
 
     public void setOffset(long offset) {
-        SeedConfig.offset = offset;
+        this.offset = offset;
     }
 
     public long getSeed() {
@@ -26,18 +26,18 @@ public class SeedConfig {
     }
 
     public void setSeed(long seed) {
-        SeedConfig.seed = seed;
+        this.seed = seed;
     }
 
     static {
         CODEC = BuilderCodec
                 .builder(SeedConfig.class, SeedConfig::new)
                 .append(new KeyedCodec<>("Seed", Codec.LONG),
-                        (config, value) -> seed = value,
+                        SeedConfig::setSeed,
                         SeedConfig::getSeed)
                 .add()
                 .append(new KeyedCodec<>("Offset", Codec.LONG),
-                        (config, value) -> offset = value,
+                        SeedConfig::setOffset,
                         SeedConfig::getOffset)
                 .add().build();
     }

@@ -49,10 +49,6 @@ public class WeeklySeedPlugin extends JavaPlugin {
 
         seedConfig = new Config<>(getDataDirectory(), "SeedConfig.json", SeedConfig.CODEC);
         seedConfig.load();
-
-        SeedConfig config = seedConfig.get();
-        config.setSeed(WeeklySeedFetcher.seed);
-        config.setOffset(WeeklySeedFetcher.offset);
         seedConfig.save();
 
         UseBlockStandardizePre.setSeedConfig(seedConfig);
