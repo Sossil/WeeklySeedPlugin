@@ -8,6 +8,7 @@ import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefChangeSystem;
 import com.hypixel.hytale.math.vector.Vector3d;
 import com.hypixel.hytale.math.vector.Vector3f;
+import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.server.core.inventory.ItemStack;
 import com.hypixel.hytale.server.core.modules.entity.damage.DeathComponent;
 import com.hypixel.hytale.server.core.modules.entity.item.ItemComponent;
@@ -62,7 +63,9 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
             throw new RuntimeException(e);
         }
 
-        List<ItemStack> drops = useBlockInstance.getSeededItemDrops(dropListId);
+        Vector3i pos = position.toVector3i();
+
+        List<ItemStack> drops = useBlockInstance.getSeededItemDrops(dropListId, pos);
         for (ItemStack item : drops) {
             spawnDrop(store, commandBuffer, item, position);
         }

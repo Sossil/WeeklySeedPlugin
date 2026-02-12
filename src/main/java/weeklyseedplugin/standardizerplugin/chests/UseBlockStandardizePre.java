@@ -59,7 +59,7 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
 
         if (WeeklySeedPlugin.LookupSystem.isFirstChestOpen(pos.getX(), pos.getY(), pos.getZ())) {
             container.getItemContainer().clear();
-            List<ItemStack> drops = this.getSeededItemDrops(dropList);
+            List<ItemStack> drops = this.getSeededItemDrops(dropList, pos);
 
             if (!drops.isEmpty()) {
                 short capacity = container.getItemContainer().getCapacity();
@@ -80,7 +80,7 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
     }
 
     @Nonnull
-    public List<ItemStack> getSeededItemDrops(@Nullable String dropListId) {
+    public List<ItemStack> getSeededItemDrops(@Nullable String dropListId, Vector3i pos) {
         if (dropListId == null) {
             return Collections.emptyList();
         } else {
@@ -88,7 +88,9 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
             if (itemDropList != null && itemDropList.getContainer() != null) {
                 List<ItemStack> generatedItemDrops = new ObjectArrayList();
                 long seed = seedConfig.get().getSeed();
-                Random seededRandom = new Random(seed);
+                long positionSeed = ((long)pos.getX() * 31 + pos.getY() * 31 + pos.getZ());
+                long combinedSeed = seed ^ positionSeed;
+                Random seededRandom = new Random(combinedSeed);
                 List<ItemDrop> configuredItemDrops = new ObjectArrayList();
                 ItemDropContainer var10000 = itemDropList.getContainer();
                 Objects.requireNonNull(seededRandom);
