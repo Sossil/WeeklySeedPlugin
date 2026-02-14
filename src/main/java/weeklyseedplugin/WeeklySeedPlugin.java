@@ -22,6 +22,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import weeklyseedplugin.setseedplugin.AddWorldSetSeed;
 import weeklyseedplugin.setseedplugin.SeedConfig;
+import weeklyseedplugin.standardizerplugin.chests.ChestConfig;
 import weeklyseedplugin.standardizerplugin.chests.UseBlockStandardizePre;
 import weeklyseedplugin.standardizerplugin.mobs.MobsKilledByIdComponent;
 import weeklyseedplugin.standardizerplugin.mobs.OnDeathStandardize;
@@ -30,14 +31,13 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.Map;
 
 import javax.annotation.Nonnull;
 import java.util.Set;
 
 public class WeeklySeedPlugin extends JavaPlugin {
     private Config<SeedConfig> seedConfig;
+    private Config<ChestConfig> chestConfig;
 
     public WeeklySeedPlugin(JavaPluginInit init) throws Exception {
         super(init);
@@ -56,6 +56,13 @@ public class WeeklySeedPlugin extends JavaPlugin {
                 MobsKilledByIdComponent.CODEC
         );
         MobsKilledByIdComponent.setComponentType(mobsKilledByIdType);
+
+        chestConfig = new Config<>(getDataDirectory(), "ChestConfig.json", ChestConfig.CODEC);
+        chestConfig.load();
+        chestConfig.save();
+
+        UseBlockStandardizePre.setChestConfig(chestConfig);
+        LookupSystem.setChestConfig(chestConfig);
 
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, WeeklySeedPlugin::onPlayerReady);
 
@@ -76,16 +83,18 @@ public class WeeklySeedPlugin extends JavaPlugin {
     }
 
     public static class LookupSystem extends RefSystem<ChunkStore> {
-        private static final Map<String, String> POSITION_TO_DROPLIST = new ConcurrentHashMap<>();
-        private static final Map<String, String> OPENED_CHEST = new ConcurrentHashMap<>();
+        private static Config<ChestConfig> chestConfig;
         private final ComponentType<ChunkStore, ItemContainerState> componentType;
         @Nonnull
         private final Set<Dependency<ChunkStore>> dependencies;
 
+        public static void setChestConfig(Config<ChestConfig> config) {
+            chestConfig = config;
+        }
 
         public LookupSystem(ComponentType<ChunkStore, ItemContainerState> componentType) {
             this.componentType = componentType;
-            this.dependencies = Set.of(new SystemDependency(Order.BEFORE, BlockStateModule.LegacyBlockStateRefSystem.class));
+            this.dependencies = Set.of(new SystemDependency<>(Order.BEFORE, BlockStateModule.LegacyBlockStateRefSystem.class));
         }
         
         public void onEntityAdded(@NonNullDecl Ref<ChunkStore> ref, @NonNullDecl AddReason addReason, @NonNullDecl Store<ChunkStore> store, @NonNullDecl CommandBuffer<ChunkStore> commandBuffer) {
@@ -96,10 +105,9 @@ public class WeeklySeedPlugin extends JavaPlugin {
                 int z = itemContainerState.getBlockZ();
                 String droplist = itemContainerState.getDroplist();
 
-                String posKey = x + "," + y + "," + z;
-                POSITION_TO_DROPLIST.put(posKey, droplist);
+                chestConfig.get().addChest(x, y, z, droplist);
 
-                if (isFirstChestOpen(x, y, z)) {
+                if (!chestConfig.get().isOpenedChest(x, y, z)) {
                     try {
                         Field dropListField = ItemContainerState.class.getDeclaredField("droplist");
                         dropListField.setAccessible(true);
@@ -108,23 +116,9 @@ public class WeeklySeedPlugin extends JavaPlugin {
                         throw new RuntimeException(e);
                     }
                 }
+                chestConfig.save();
             }
 
-        }
-
-        public static String getDropList(int x, int y, int z) {
-            String posKey = x + "," + y + "," + z;
-            return POSITION_TO_DROPLIST.get(posKey);
-        }
-
-        public static boolean isFirstChestOpen(int x, int y, int z) {
-            String posKey = x + "," + y + "," + z;
-            return !OPENED_CHEST.containsKey(posKey);
-        }
-
-        public static void markChestOpen(int x, int y, int z) {
-            String posKey = x + "," + y + "," + z;
-            OPENED_CHEST.put(posKey, "");
         }
 
         @Override
@@ -143,7 +137,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
         }
     }
 
-    public class WeeklySeedFetcher {
+    public static class WeeklySeedFetcher {
         public static long seed;
         public static long offset;
 

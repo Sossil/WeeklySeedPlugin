@@ -6,7 +6,6 @@ import com.hypixel.hytale.component.CommandBuffer;
 import com.hypixel.hytale.component.Store;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.EntityEventSystem;
-import com.hypixel.hytale.logger.HytaleLogger;
 import com.hypixel.hytale.math.vector.Vector3i;
 import com.hypixel.hytale.protocol.InteractionType;
 import com.hypixel.hytale.server.core.asset.type.item.config.ItemDrop;
@@ -20,7 +19,7 @@ import com.hypixel.hytale.server.core.universe.world.meta.state.ItemContainerSta
 import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.Config;
 import it.unimi.dsi.fastutil.objects.ObjectArrayList;
-import weeklyseedplugin.WeeklySeedPlugin;
+import org.jetbrains.annotations.NotNull;
 import weeklyseedplugin.setseedplugin.SeedConfig;
 
 import javax.annotation.Nonnull;
@@ -29,10 +28,15 @@ import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBlockEvent.Post> {
+    private static Config<ChestConfig> chestConfig;
     private static Config<SeedConfig> seedConfig;
-    public static final HytaleLogger LOGGER = HytaleLogger.forEnclosingClass();
+
     public UseBlockStandardizePre() {
         super(UseBlockEvent.Post.class);
+    }
+
+    public static void setChestConfig(Config<ChestConfig> config) {
+        chestConfig = config;
     }
 
     public static void setSeedConfig(Config<SeedConfig> config) {
@@ -40,11 +44,11 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
     }
 
     @Override
-    public void handle(int index, ArchetypeChunk<EntityStore> archetypeChunk,
-                       Store<EntityStore> store, CommandBuffer<EntityStore> commandBuffer,
+    public void handle(int index, @NotNull ArchetypeChunk<EntityStore> archetypeChunk,
+                       Store<EntityStore> store, @NotNull CommandBuffer<EntityStore> commandBuffer,
                        UseBlockEvent.Post event) {
 
-        Player player = (Player) store.getComponent(event.getContext().getEntity(), Player.getComponentType());
+        Player player = store.getComponent(event.getContext().getEntity(), Player.getComponentType());
         Vector3i pos = event.getTargetBlock();
         BlockState blockstate = player.getWorld().getState(pos.getX(), pos.getY(), pos.getZ(), true);
         if (blockstate instanceof ItemContainerState container) {
@@ -55,15 +59,15 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
     }
 
     private void standardizeChestContents(ItemContainerState container, Vector3i pos) {
-        String dropList = WeeklySeedPlugin.LookupSystem.getDropList(pos.getX(), pos.getY(), pos.getZ());
+        String dropList = chestConfig.get().getDropList(pos.getX(), pos.getY(), pos.getZ());
 
-        if (WeeklySeedPlugin.LookupSystem.isFirstChestOpen(pos.getX(), pos.getY(), pos.getZ())) {
+        if (!chestConfig.get().isOpenedChest(pos.getX(), pos.getY(), pos.getZ())) {
             container.getItemContainer().clear();
             List<ItemStack> drops = this.getSeededItemDrops(dropList, pos);
 
             if (!drops.isEmpty()) {
                 short capacity = container.getItemContainer().getCapacity();
-                List<Short> slots = new ArrayList();
+                List<Short> slots = new ArrayList<>();
 
                 for (short s = 0; s < capacity; ++s) {
                     slots.add(s);
@@ -72,10 +76,11 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
 
                 for (int idx = 0; idx < drops.size() && idx < slots.size(); ++idx) {
                     short slot = slots.get(idx);
-                    container.getItemContainer().setItemStackForSlot(slot, (ItemStack) drops.get(idx));
+                    container.getItemContainer().setItemStackForSlot(slot, drops.get(idx));
                 }
             }
-            WeeklySeedPlugin.LookupSystem.markChestOpen(pos.getX(), pos.getY(), pos.getZ());
+           chestConfig.get().markOpenedChest(pos.getX(), pos.getY(), pos.getZ());
+           chestConfig.save();
         }
     }
 
@@ -84,15 +89,15 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
         if (dropListId == null) {
             return Collections.emptyList();
         } else {
-            ItemDropList itemDropList = (ItemDropList)ItemDropList.getAssetMap().getAsset(dropListId);
+            ItemDropList itemDropList = ItemDropList.getAssetMap().getAsset(dropListId);
             if (itemDropList != null && itemDropList.getContainer() != null) {
-                List<ItemStack> generatedItemDrops = new ObjectArrayList();
+                List<ItemStack> generatedItemDrops = new ObjectArrayList<>();
                 long seed = seedConfig.get().getSeed();
-                long positionSeed = ((long)pos.getX() * 31 + pos.getY() * 31 + pos.getZ());
+                long positionSeed = ((long)pos.getX() * 31L + pos.getY() * 31L + pos.getZ());
                 long offset = seedConfig.get().getOffset();
                 long combinedSeed = seed ^ positionSeed ^ offset;
                 Random seededRandom = new Random(combinedSeed);
-                List<ItemDrop> configuredItemDrops = new ObjectArrayList();
+                List<ItemDrop> configuredItemDrops = new ObjectArrayList<>();
                 ItemDropContainer var10000 = itemDropList.getContainer();
                 Objects.requireNonNull(seededRandom);
                 var10000.populateDrops(configuredItemDrops, seededRandom::nextDouble, dropListId);

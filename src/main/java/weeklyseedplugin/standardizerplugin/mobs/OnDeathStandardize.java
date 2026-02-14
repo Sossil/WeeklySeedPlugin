@@ -23,14 +23,12 @@ import it.unimi.dsi.fastutil.objects.ObjectArrayList;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import weeklyseedplugin.setseedplugin.SeedConfig;
-import weeklyseedplugin.standardizerplugin.chests.UseBlockStandardizePre;
 
 import javax.annotation.Nonnull;
 import java.lang.reflect.Field;
 import java.util.*;
 
 public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathComponent> {
-    UseBlockStandardizePre useBlockInstance = new UseBlockStandardizePre();
     private static Config<SeedConfig> seedConfig;
 
     public static void setSeedConfig(Config<SeedConfig> config) {
@@ -40,7 +38,7 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
     @Nonnull
     @Override
     public Set<Dependency<EntityStore>> getDependencies() {
-        return Set.of(new SystemDependency(Order.BEFORE, NPCDamageSystems.DropDeathItems.class));
+        return Set.of(new SystemDependency<>(Order.BEFORE, NPCDamageSystems.DropDeathItems.class));
     }
 
 
@@ -119,9 +117,9 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
         if (dropListId == null) {
             return Collections.emptyList();
         } else {
-            ItemDropList itemDropList = (ItemDropList)ItemDropList.getAssetMap().getAsset(dropListId);
+            ItemDropList itemDropList = ItemDropList.getAssetMap().getAsset(dropListId);
             if (itemDropList != null && itemDropList.getContainer() != null) {
-                List<ItemStack> generatedItemDrops = new ObjectArrayList();
+                List<ItemStack> generatedItemDrops = new ObjectArrayList<>();
                 long seed = seedConfig.get().getSeed();
                 long offset = seedConfig.get().getOffset();
                 var mobsKilledType = MobsKilledByIdComponent.getComponentType();
@@ -129,7 +127,7 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
                 long mobsKilledById = idList.getMobsKilledById(dropListId);
                 long combinedSeed = seed ^ offset ^ mobsKilledById;
                 Random seededRandom = new Random(combinedSeed);
-                List<ItemDrop> configuredItemDrops = new ObjectArrayList();
+                List<ItemDrop> configuredItemDrops = new ObjectArrayList<>();
                 ItemDropContainer var10000 = itemDropList.getContainer();
                 Objects.requireNonNull(seededRandom);
                 var10000.populateDrops(configuredItemDrops, seededRandom::nextDouble, dropListId);

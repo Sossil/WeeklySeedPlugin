@@ -23,8 +23,8 @@ public class MobsKilledByIdComponent implements Component<EntityStore> {
             .builder(MobsKilledByIdComponent.class, MobsKilledByIdComponent::new)
             .append(
                     new KeyedCodec<>("MobsKilled" , new MapCodec<>(Codec.LONG, HashMap::new, false)),
-                    (component, map) -> component.setMobsKilled(map),
-                    component -> component.getMobsKilled()
+                    MobsKilledByIdComponent::setMobsKilled,
+                    MobsKilledByIdComponent::getMobsKilled
             ).add()
             .build();
 
@@ -37,9 +37,7 @@ public class MobsKilledByIdComponent implements Component<EntityStore> {
 
     public Map<String, Long> getMobsKilled() { return mobsKilled; }
 
-    public void setMobsKilled(Map<String, Long> map) {
-        this.mobsKilled = map != null ? map : new HashMap<>();
-    }
+    public void setMobsKilled(Map<String, Long> mobsKilled) {this.mobsKilled = mobsKilled; }
 
     @Override
     public MobsKilledByIdComponent clone() { return new MobsKilledByIdComponent(); }

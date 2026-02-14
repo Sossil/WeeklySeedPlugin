@@ -8,7 +8,6 @@ import weeklyseedplugin.WeeklySeedPlugin;
 
 public class AddWorldSetSeed {
     private static Config<SeedConfig> seedConfig;
-    public static boolean displayNameNumbered = false;
 
     public static void setSeedConfig(Config<SeedConfig> config) {
         seedConfig = config;
@@ -21,8 +20,8 @@ public class AddWorldSetSeed {
 
         String displayName = worldConfig.getDisplayName();
         String[] trimName = displayName.trim().split("\\s+");
-        long seedName = 0L;
-        long offsetName = 0L;
+        long seedName;
+        long offsetName;
 
         if (trimName.length == 2) {
             try {
