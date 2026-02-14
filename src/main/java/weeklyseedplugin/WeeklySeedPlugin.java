@@ -7,12 +7,15 @@ import com.hypixel.hytale.component.dependency.Order;
 import com.hypixel.hytale.component.dependency.SystemDependency;
 import com.hypixel.hytale.component.query.Query;
 import com.hypixel.hytale.component.system.RefSystem;
+import com.hypixel.hytale.server.core.event.events.player.PlayerReadyEvent;
 import com.hypixel.hytale.server.core.plugin.JavaPlugin;
 import com.hypixel.hytale.server.core.plugin.JavaPluginInit;
+import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent;
 import com.hypixel.hytale.server.core.universe.world.meta.BlockStateModule;
 import com.hypixel.hytale.server.core.universe.world.meta.state.ItemContainerState;
 import com.hypixel.hytale.server.core.universe.world.storage.ChunkStore;
+import com.hypixel.hytale.server.core.universe.world.storage.EntityStore;
 import com.hypixel.hytale.server.core.util.Config;
 import org.checkerframework.checker.nullness.compatqual.NonNullDecl;
 import org.jetbrains.annotations.NotNull;
@@ -20,6 +23,7 @@ import org.jetbrains.annotations.Nullable;
 import weeklyseedplugin.setseedplugin.AddWorldSetSeed;
 import weeklyseedplugin.setseedplugin.SeedConfig;
 import weeklyseedplugin.standardizerplugin.chests.UseBlockStandardizePre;
+import weeklyseedplugin.standardizerplugin.mobs.MobsKilledByIdComponent;
 import weeklyseedplugin.standardizerplugin.mobs.OnDeathStandardize;
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -44,6 +48,16 @@ public class WeeklySeedPlugin extends JavaPlugin {
     @Override
     protected void setup() {
         super.setup();
+
+        var registry = getEntityStoreRegistry();
+        var mobsKilledByIdType = registry.registerComponent(
+                MobsKilledByIdComponent.class,
+                "Mobs_Killed_By_Id",
+                MobsKilledByIdComponent.CODEC
+        );
+        MobsKilledByIdComponent.setComponentType(mobsKilledByIdType);
+
+        this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, WeeklySeedPlugin::onPlayerReady);
 
         this.getChunkStoreRegistry().registerSystem(new LookupSystem(BlockStateModule.get().getComponentType(ItemContainerState.class)));
 
@@ -157,5 +171,20 @@ public class WeeklySeedPlugin extends JavaPlugin {
             seed = Long.parseLong(lines[0].trim());
             offset = Long.parseLong(lines[1].trim());
         }
+    }
+
+    public static void onPlayerReady(PlayerReadyEvent event){
+        World world = event.getPlayer().getWorld();
+        world.execute(() -> {
+            Ref<EntityStore> ref = event.getPlayer().getReference();
+            if (ref == null) return;
+
+            Store<EntityStore> store = event.getPlayerRef().getStore();
+
+            var mobsKilledByIdType = MobsKilledByIdComponent.getComponentType();
+            if (store.getComponent(ref, mobsKilledByIdType) == null){
+                store.addComponent(ref, mobsKilledByIdType);
+            }
+        });
     }
 }

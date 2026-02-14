@@ -71,7 +71,16 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
             throw new RuntimeException(e);
         }
 
-        List<ItemStack> drops = this.getSeededMobDrops(dropListId);
+        Ref<EntityStore> playerReference = npc.getDamageData().getMostDamagingAttacker();
+        if (playerReference == null) return;
+
+        var mobsKilledType = MobsKilledByIdComponent.getComponentType();
+        MobsKilledByIdComponent idList = store.getComponent(playerReference, mobsKilledType);
+        if (idList == null) return;
+
+        idList.addId(dropListId);
+
+        List<ItemStack> drops = this.getSeededMobDrops(dropListId, playerReference ,store);
         for (ItemStack item : drops) {
             spawnDrop(store, commandBuffer, item, position);
         }
@@ -106,7 +115,7 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
     }
 
     @Nonnull
-    public List<ItemStack> getSeededMobDrops(@javax.annotation.Nullable String dropListId) {
+    public List<ItemStack> getSeededMobDrops(@Nullable String dropListId, Ref<EntityStore> playerReference, Store<EntityStore> store) {
         if (dropListId == null) {
             return Collections.emptyList();
         } else {
@@ -115,7 +124,10 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
                 List<ItemStack> generatedItemDrops = new ObjectArrayList();
                 long seed = seedConfig.get().getSeed();
                 long offset = seedConfig.get().getOffset();
-                long combinedSeed = seed ^ offset;
+                var mobsKilledType = MobsKilledByIdComponent.getComponentType();
+                MobsKilledByIdComponent idList = store.getComponent(playerReference, mobsKilledType);
+                long mobsKilledById = idList.getMobsKilledById(dropListId);
+                long combinedSeed = seed ^ offset ^ mobsKilledById;
                 Random seededRandom = new Random(combinedSeed);
                 List<ItemDrop> configuredItemDrops = new ObjectArrayList();
                 ItemDropContainer var10000 = itemDropList.getContainer();
