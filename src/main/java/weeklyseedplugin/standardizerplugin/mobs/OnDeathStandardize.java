@@ -70,13 +70,14 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
         }
 
         Ref<EntityStore> playerReference = npc.getDamageData().getMostDamagingAttacker();
-        if (playerReference == null) return;
 
-        var mobsKilledType = MobsKilledByIdComponent.getComponentType();
-        MobsKilledByIdComponent idList = store.getComponent(playerReference, mobsKilledType);
-        if (idList == null) return;
-
-        idList.addId(dropListId);
+        if (playerReference != null) {
+            var mobsKilledType = MobsKilledByIdComponent.getComponentType();
+            MobsKilledByIdComponent idList = store.getComponent(playerReference, mobsKilledType);
+            if (idList != null) {
+                idList.addId(dropListId);
+            }
+        }
 
         List<ItemStack> drops = this.getSeededMobDrops(dropListId, playerReference ,store);
         for (ItemStack item : drops) {
@@ -122,9 +123,14 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
                 List<ItemStack> generatedItemDrops = new ObjectArrayList<>();
                 long seed = seedConfig.get().getSeed();
                 long offset = seedConfig.get().getOffset();
-                var mobsKilledType = MobsKilledByIdComponent.getComponentType();
-                MobsKilledByIdComponent idList = store.getComponent(playerReference, mobsKilledType);
-                long mobsKilledById = idList.getMobsKilledById(dropListId);
+                long mobsKilledById = 0L;
+                if (playerReference != null) {
+                    var mobsKilledType = MobsKilledByIdComponent.getComponentType();
+                    MobsKilledByIdComponent idList = store.getComponent(playerReference, mobsKilledType);
+                    if (idList != null) {
+                        mobsKilledById = idList.getMobsKilledById(dropListId);
+                    }
+                }
                 long combinedSeed = seed ^ offset ^ mobsKilledById;
                 Random seededRandom = new Random(combinedSeed);
                 List<ItemDrop> configuredItemDrops = new ObjectArrayList<>();
