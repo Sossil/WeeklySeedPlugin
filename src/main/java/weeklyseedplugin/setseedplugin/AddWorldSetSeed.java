@@ -1,5 +1,6 @@
 package weeklyseedplugin.setseedplugin;
 
+import com.hypixel.hytale.server.core.universe.Universe;
 import com.hypixel.hytale.server.core.universe.world.World;
 import com.hypixel.hytale.server.core.universe.world.WorldConfig;
 import com.hypixel.hytale.server.core.universe.world.events.AddWorldEvent;
@@ -25,6 +26,13 @@ public class AddWorldSetSeed {
 
         if (trimName.length == 2) {
             try {
+                if (Universe.get().getDefaultWorld() != null) {
+                    String defaultDisplayName = Universe.get().getDefaultWorld().getWorldConfig().getDisplayName();
+                    if (!displayName.equals(defaultDisplayName)) {
+                        trimName = defaultDisplayName.trim().split("\\s+");
+                    }
+                }
+
                 seedName = Long.parseLong(trimName[0]);
                 offsetName = Long.parseLong(trimName[1]);
 
