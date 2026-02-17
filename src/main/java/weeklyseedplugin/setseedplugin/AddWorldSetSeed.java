@@ -24,6 +24,7 @@ public class AddWorldSetSeed {
         long seedName;
         long offsetName;
 
+        //use world display name for seed & offset if the format is correct
         if (trimName.length == 2) {
             try {
                 if (Universe.get().getDefaultWorld() != null) {
@@ -43,6 +44,7 @@ public class AddWorldSetSeed {
                 return;
             } catch (NumberFormatException ignored) {}
         }
+        //fetches the seed and offset from github, if world name formatting is incorrect
         config.setSeed(WeeklySeedPlugin.WeeklySeedFetcher.seed);
         config.setOffset(WeeklySeedPlugin.WeeklySeedFetcher.offset);
         worldConfig.setSeed(config.getSeed());

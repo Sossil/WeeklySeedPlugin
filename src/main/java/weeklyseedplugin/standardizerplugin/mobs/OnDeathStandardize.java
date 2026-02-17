@@ -61,6 +61,7 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
         Vector3d position = npc.getOldPosition();
         if (position == null) return;
 
+        //make the mob no drop its original loot
         try {
             Field dropListField = role.getClass().getDeclaredField("dropListId");
             dropListField.setAccessible(true);
@@ -69,8 +70,10 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
             throw new RuntimeException(e);
         }
 
+        //only way I could find to access the player
         Ref<EntityStore> playerReference = npc.getDamageData().getMostDamagingAttacker();
 
+        //count mobs killed for this droplist, used for standardization
         if (playerReference != null) {
             var mobsKilledType = MobsKilledByIdComponent.getComponentType();
             MobsKilledByIdComponent idList = store.getComponent(playerReference, mobsKilledType);
@@ -131,6 +134,7 @@ public class OnDeathStandardize extends RefChangeSystem<EntityStore, DeathCompon
                         mobsKilledById = idList.getMobsKilledById(dropListId);
                     }
                 }
+                //seed + offset + mobs killed per droplist is used for mob drop standardization
                 long combinedSeed = seed ^ offset ^ mobsKilledById;
                 Random seededRandom = new Random(combinedSeed);
                 List<ItemDrop> configuredItemDrops = new ObjectArrayList<>();

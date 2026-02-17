@@ -49,6 +49,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
     protected void setup() {
         super.setup();
 
+        //Make or load component file
         var registry = getEntityStoreRegistry();
         var mobsKilledByIdType = registry.registerComponent(
                 MobsKilledByIdComponent.class,
@@ -57,27 +58,35 @@ public class WeeklySeedPlugin extends JavaPlugin {
         );
         MobsKilledByIdComponent.setComponentType(mobsKilledByIdType);
 
+        //make or load chest config
         chestConfig = new Config<>(getDataDirectory(), "ChestConfig.json", ChestConfig.CODEC);
         chestConfig.load();
         chestConfig.save();
 
+        //set chest config
         UseBlockStandardizePre.setChestConfig(chestConfig);
         LookupSystem.setChestConfig(chestConfig);
 
+        //register onPlayerReady event
         this.getEventRegistry().registerGlobal(PlayerReadyEvent.class, WeeklySeedPlugin::onPlayerReady);
 
+        //register LookupSystem system
         this.getChunkStoreRegistry().registerSystem(new LookupSystem(BlockStateModule.get().getComponentType(ItemContainerState.class)));
 
+        //maker or load seed config
         seedConfig = new Config<>(getDataDirectory(), "SeedConfig.json", SeedConfig.CODEC);
         seedConfig.load();
         seedConfig.save();
 
+        //set seed config
         UseBlockStandardizePre.setSeedConfig(seedConfig);
         OnDeathStandardize.setSeedConfig(seedConfig);
         AddWorldSetSeed.setSeedConfig(seedConfig);
 
+        //register onWorldAdd event
         getEventRegistry().registerGlobal(AddWorldEvent.class, AddWorldSetSeed::onWorldAdd);
 
+        //register UseblockStandardizePre and OnDeathStandardize systems
         getEntityStoreRegistry().registerSystem(new UseBlockStandardizePre());
         getEntityStoreRegistry().registerSystem(new OnDeathStandardize());
     }
@@ -96,7 +105,8 @@ public class WeeklySeedPlugin extends JavaPlugin {
             this.componentType = componentType;
             this.dependencies = Set.of(new SystemDependency<>(Order.BEFORE, BlockStateModule.LegacyBlockStateRefSystem.class));
         }
-        
+
+        //Get the location and droplist of chests when they are first added by world gen
         public void onEntityAdded(@NonNullDecl Ref<ChunkStore> ref, @NonNullDecl AddReason addReason, @NonNullDecl Store<ChunkStore> store, @NonNullDecl CommandBuffer<ChunkStore> commandBuffer) {
             ItemContainerState itemContainerState = store.getComponent(ref, this.componentType);
             if (itemContainerState != null && itemContainerState.getDroplist() != null) {
@@ -107,6 +117,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
 
                 chestConfig.get().addChest(x, y, z, droplist);
 
+                //make original chest drops not populate the chest
                 if (!chestConfig.get().isOpenedChest(x, y, z)) {
                     try {
                         Field dropListField = ItemContainerState.class.getDeclaredField("droplist");
@@ -116,6 +127,7 @@ public class WeeklySeedPlugin extends JavaPlugin {
                         throw new RuntimeException(e);
                     }
                 }
+                //chest config used so plugin works on server restart
                 chestConfig.save();
             }
 
@@ -169,12 +181,14 @@ public class WeeklySeedPlugin extends JavaPlugin {
 
     public static void onPlayerReady(PlayerReadyEvent event){
         World world = event.getPlayer().getWorld();
+        //world.execute to not run into thread issues
         world.execute(() -> {
             Ref<EntityStore> ref = event.getPlayer().getReference();
             if (ref == null) return;
 
             Store<EntityStore> store = event.getPlayerRef().getStore();
 
+            //add the component to the player on ready
             var mobsKilledByIdType = MobsKilledByIdComponent.getComponentType();
             if (store.getComponent(ref, mobsKilledByIdType) == null){
                 store.addComponent(ref, mobsKilledByIdType);

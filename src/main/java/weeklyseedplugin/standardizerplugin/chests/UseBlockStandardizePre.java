@@ -50,6 +50,7 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
 
         Player player = store.getComponent(event.getContext().getEntity(), Player.getComponentType());
         Vector3i pos = event.getTargetBlock();
+        //BlockState is deprecated, couldn't find another way to do this
         BlockState blockstate = player.getWorld().getState(pos.getX(), pos.getY(), pos.getZ(), true);
         if (blockstate instanceof ItemContainerState container) {
             if (event.getInteractionType() == InteractionType.Use) {
@@ -61,6 +62,7 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
     private void standardizeChestContents(ItemContainerState container, Vector3i pos) {
         String dropList = chestConfig.get().getDropList(pos.getX(), pos.getY(), pos.getZ());
 
+        //only populate chests with loot on first open
         if (!chestConfig.get().isOpenedChest(pos.getX(), pos.getY(), pos.getZ())) {
             container.getItemContainer().clear();
             List<ItemStack> drops = this.getSeededItemDrops(dropList, pos);
@@ -72,6 +74,7 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
                 for (short s = 0; s < capacity; ++s) {
                     slots.add(s);
                 }
+                //the slot for each item in the chest is still random
                 Collections.shuffle(slots, ThreadLocalRandom.current());
 
                 for (int idx = 0; idx < drops.size() && idx < slots.size(); ++idx) {
@@ -95,6 +98,7 @@ public class UseBlockStandardizePre extends EntityEventSystem<EntityStore, UseBl
                 long seed = seedConfig.get().getSeed();
                 long positionSeed = ((long)pos.getX() * 31L + pos.getY() * 31L + pos.getZ());
                 long offset = seedConfig.get().getOffset();
+                //seed + position + offset is used for chest loot standardization
                 long combinedSeed = seed ^ positionSeed ^ offset;
                 Random seededRandom = new Random(combinedSeed);
                 List<ItemDrop> configuredItemDrops = new ObjectArrayList<>();
