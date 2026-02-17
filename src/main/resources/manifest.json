@@ -1,8 +1,9 @@
 {
   "Group": "HTSR",
   "Name": "WeeklySeedPlugin",
-  "Version": "1.4.4",
+  "Version": "1.4.5",
   "Main": "weeklyseedplugin.WeeklySeedPlugin",
+  "ServerVersion": "2026.02.17-255364b8e",
   "Authors": [
     {
       "Name": "Sossil"
